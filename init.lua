@@ -103,5 +103,5 @@ if config then
 		end
 	end
 end
-
+print("Loaded CodeBrainrot I think")
 window:notify("loaded, press " .. toggleKey.Name .. " to hide")
