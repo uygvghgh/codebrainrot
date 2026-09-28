@@ -157,12 +157,3 @@ return function(context)
 		}
 	}
 end
-
-
-
-
-
-
-
-
-print("")
