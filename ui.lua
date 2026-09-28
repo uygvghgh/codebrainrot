@@ -26,7 +26,7 @@ local function make(class, props, parent)
 end
 
 local function round(inst, radius)
-	return make("UICorner", { CornerRadius = UDim.new(0, radius or 4) }, inst)
+	return inst
 end
 
 local function tween(inst, props, time)
