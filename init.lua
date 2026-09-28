@@ -1,4 +1,4 @@
-local baseUrl = "https://raw.githubusercontent.com/yourname/codebrainrot/main/"
+local baseUrl = "https://raw.githubusercontent.com/uygvghgh/codebrainrot/main/"
 local toggleKey = Enum.KeyCode.RightControl
 local forcePlaceId = nil
 
