@@ -67,7 +67,6 @@ function tabClass:row(height)
 		BorderSizePixel = 0,
 		LayoutOrder = self:nextOrder(),
 	}, self.page)
-	round(row, 4)
 	return row
 end
 
@@ -104,6 +103,33 @@ function tabClass:label(text)
 	}
 end
 
+function tabClass:entry(left, right)
+	local row = self:row(28)
+	make("TextLabel", {
+		Position = UDim2.fromOffset(8, 0),
+		Size = UDim2.new(1, -110, 1, 0),
+		BackgroundTransparency = 1,
+		Text = left,
+		TextColor3 = colors.text,
+		Font = Enum.Font.SourceSans,
+		TextSize = 16,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+	}, row)
+	make("TextLabel", {
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -8, 0, 0),
+		Size = UDim2.fromOffset(100, 28),
+		BackgroundTransparency = 1,
+		Text = right,
+		TextColor3 = colors.dim,
+		Font = Enum.Font.SourceSans,
+		TextSize = 16,
+		TextXAlignment = Enum.TextXAlignment.Right,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+	}, row)
+end
+
 function tabClass:toggle(options)
 	local on = options.default == true
 	local row = self:row(30)
@@ -127,7 +153,6 @@ function tabClass:toggle(options)
 		BackgroundColor3 = on and colors.blue or colors.box,
 		BorderSizePixel = 0,
 	}, row)
-	round(box, 3)
 
 	local function refresh(silent)
 		tween(box, { BackgroundColor3 = on and colors.blue or colors.box })
@@ -341,7 +366,6 @@ function windowClass:notify(text, duration)
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextTruncate = Enum.TextTruncate.AtEnd,
 	}, self.toasts)
-	round(toast, 4)
 
 	task.delay(duration or 3, function()
 		tween(toast, { BackgroundTransparency = 1, TextTransparency = 1 }, 0.3)
@@ -367,6 +391,7 @@ function library.createWindow(options)
 	self.gui = make("ScreenGui", {
 		Name = options.name or "Window",
 		ResetOnSpawn = false,
+		IgnoreGuiInset = true,
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 	})
 	attach(self.gui)
@@ -379,7 +404,7 @@ function library.createWindow(options)
 		Active = true,
 		ClipsDescendants = true,
 	}, self.gui)
-	round(self.main, 6)
+	round(self.main, 4)
 	make("UIStroke", { Color = colors.border, Thickness = 1 }, self.main)
 
 	local titlebar = make("Frame", {
