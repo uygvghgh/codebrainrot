@@ -1,36 +1,61 @@
 return function(context)
     local features = {}
 
+    -- Feature 1: Tap Health
     table.insert(features, {
         name = "Tap Health",
         type = "toggle",
         default = false,
+        thread = nil, -- Store the thread ID
         callback = function(isOn)
             if isOn then
+                -- If already running, cancel it first to prevent duplicates
+                if features[1].thread then
+                    task.cancel(features[1].thread)
+                end
+                
                 local ReplicatedStorage = game:GetService("ReplicatedStorage")
                 local Event = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TapHealth")
                 
-                spawn(function()
-                    while isOn do
+                features[1].thread = task.spawn(function()
+                    while true do
+                        -- Check if we should stop
+                        if not isOn then break end
+                        
                         pcall(function()
                             Event:FireServer()
                         end)
                         task.wait()
                     end
                 end)
+            else
+                -- TURN OFF LOGIC
+                if features[1].thread then
+                    task.cancel(features[1].thread) -- This kills the loop immediately
+                    features[1].thread = nil
+                end
             end
         end
     })
 
+    -- Feature 2: Auto Farm
     table.insert(features, {
         name = "Auto Farm",
         type = "toggle",
         default = false,
+        thread = nil,
         callback = function(isOn)
             if isOn then
-                spawn(function()
-                    local plr = game.Players.LocalPlayer
-                    while isOn do
+                if features[2].thread then
+                    task.cancel(features[2].thread)
+                end
+                
+                local plr = game.Players.LocalPlayer
+                
+                features[2].thread = task.spawn(function()
+                    while true do
+                        if not isOn then break end
+                        
                         pcall(function()
                             local topRot = nil
                             local bestAmt = 0
@@ -65,6 +90,12 @@ return function(context)
                         task.wait(0.1)
                     end
                 end)
+            else
+                -- TURN OFF LOGIC
+                if features[2].thread then
+                    task.cancel(features[2].thread) -- Kills the loop immediately
+                    features[2].thread = nil
+                end
             end
         end
     })
