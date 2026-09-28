@@ -10,6 +10,9 @@ end
 env.codeBrainrotLoaded = true
 
 local marketplace = game:GetService("MarketplaceService")
+local runService = game:GetService("RunService")
+local userInput = game:GetService("UserInputService")
+local virtualInput = game:GetService("VirtualInputManager")
 
 local function fetchModule(path)
 	local okFetch, source = pcall(function()
@@ -31,6 +34,14 @@ local function fetchModule(path)
 	return result
 end
 
+local function getGameName(id)
+	local name = "Unknown game"
+	pcall(function()
+		name = marketplace:GetProductInfo(id).Name
+	end)
+	return name
+end
+
 local ui, uiError = fetchModule("ui.lua")
 if not ui then
 	env.codeBrainrotLoaded = nil
@@ -39,13 +50,9 @@ if not ui then
 end
 
 local placeId = forcePlaceId or game.PlaceId
-local gameName = "Unknown game"
-if placeId == 0 then
-	gameName = "Studio place"
-else
-	pcall(function()
-		gameName = marketplace:GetProductInfo(placeId).Name
-	end)
+local gameName = "Studio place"
+if placeId ~= 0 then
+	gameName = getGameName(placeId)
 end
 
 local window = ui.createWindow({
@@ -103,5 +110,99 @@ if config then
 		end
 	end
 end
-print("Loaded CodeBrainrot I think")
+
+local gamesTab = window:addTab("Games")
+local gameList = fetchModule("games/list.lua")
+if typeof(gameList) == "table" and #gameList > 0 then
+	gamesTab:section("supported games")
+	for _, entry in ipairs(gameList) do
+		local name = entry.name
+		if not name then
+			name = getGameName(entry.id)
+		end
+		gamesTab:entry(name, tostring(entry.id))
+	end
+else
+	gamesTab:label("couldn't load the game list")
+end
+
+local settings = window:addTab("Settings")
+
+settings:section("performance")
+settings:toggle({
+	name = "disable 3d rendering",
+	default = false,
+	callback = function(on)
+		runService:Set3dRenderingEnabled(not on)
+	end,
+})
+
+local clicking = false
+local clickToken = 0
+local clicksPerSecond = 10
+
+local function overWindow(position)
+	local main = window.main
+	if not main.Visible then
+		return false
+	end
+	local topLeft = main.AbsolutePosition
+	local size = main.AbsoluteSize
+	return position.X >= topLeft.X and position.X <= topLeft.X + size.X
+		and position.Y >= topLeft.Y and position.Y <= topLeft.Y + size.Y
+end
+
+local function click()
+	local position = userInput:GetMouseLocation()
+	if overWindow(position) then
+		return
+	end
+	if mouse1click then
+		mouse1click()
+	else
+		virtualInput:SendMouseButtonEvent(position.X, position.Y, 0, true, game, 0)
+		virtualInput:SendMouseButtonEvent(position.X, position.Y, 0, false, game, 0)
+	end
+end
+
+settings:section("auto clicker")
+settings:toggle({
+	name = "auto clicker",
+	default = false,
+	callback = function(on)
+		clicking = on
+		clickToken = clickToken + 1
+		if not on then
+			return
+		end
+		local myToken = clickToken
+		task.spawn(function()
+			while clicking and clickToken == myToken do
+				click()
+				task.wait(1 / clicksPerSecond)
+			end
+		end)
+	end,
+})
+settings:slider({
+	name = "clicks per second",
+	min = 1,
+	max = 30,
+	default = 10,
+	callback = function(value)
+		clicksPerSecond = value
+	end,
+})
+
+local credits = window:addTab("Credits")
+local creditList = fetchModule("credits.lua")
+if typeof(creditList) == "table" and #creditList > 0 then
+	credits:section("made by")
+	for _, person in ipairs(creditList) do
+		credits:entry(person.name, person.role or "")
+	end
+else
+	credits:label("couldn't load credits")
+end
+
 window:notify("loaded, press " .. toggleKey.Name .. " to hide")
