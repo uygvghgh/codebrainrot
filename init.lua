@@ -57,7 +57,7 @@ end
 
 local window = ui.createWindow({
 	name = "CodeBrainrot",
-	version = "v1.0.0",
+	version = "",
 	toggleKey = toggleKey,
 })
 
